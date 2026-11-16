@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Italiana", serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #f2efe8;
+    color: #1d241f;
+    font-family: "DM Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  a {
+    cursor: pointer;
+  }
+
+  em {
+    font-family: "Italiana", serif;
+    font-style: italic;
+  }
+
+  ::selection {
+    background: #d8b26e;
+    color: #172019;
+  }
+}
+
+@layer components {
+  .site-container {
+    width: min(100% - 2.5rem, 1320px);
+    margin-inline: auto;
+  }
+
+  .section-pad {
+    padding-block: clamp(5.5rem, 10vw, 9rem);
+  }
+
+  .font-display {
+    font-family: "Italiana", serif;
+  }
+
+  .eyebrow {
+    font-size: 0.63rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    max-width: 760px;
+    font-family: "Italiana", serif;
+    font-size: clamp(3rem, 6vw, 5.8rem);
+    line-height: 0.93;
+    letter-spacing: -0.04em;
+  }
+
+  .page-title {
+    font-family: "Italiana", serif;
+    font-size: clamp(3.6rem, 8vw, 8rem);
+    line-height: 0.87;
+    letter-spacing: -0.05em;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .form-field span {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    border-bottom: 1px solid rgb(29 36 31 / 0.35);
+    background: transparent;
+    padding: 0.7rem 0;
+    border-radius: 0;
+    outline: none;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: #9b7139;
+  }
+
+  .article-copy {
+    color: #565d56;
+    font-size: 0.95rem;
+    line-height: 1.9;
+  }
+
+  .article-copy h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #1d241f;
+    font-family: "Italiana", serif;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .article-copy blockquote {
+    margin-block: 3rem;
+    border-left: 2px solid #b98b51;
+    padding-left: 1.7rem;
+    color: #1d241f;
+    font-family: "Italiana", serif;
+    font-size: 2rem;
+    line-height: 1.25;
+  }
+
+  .article-lead {
+    color: #1d241f;
+    font-family: "Italiana", serif;
+    font-size: 1.6rem;
+    line-height: 1.45;
+  }
+
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition:
+      gap 250ms ease,
+      opacity 250ms ease;
+  }
+
+  .text-link:hover {
+    gap: 1.2rem;
+    opacity: 0.72;
+  }
+
+  .data-label {
+    display: block;
+    color: rgb(255 255 255 / 0.38);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+  }
+
+  .nav-link {
+    position: relative;
+    padding-block: 0.4rem;
+  }
+
+  .nav-link::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    transform: scaleX(0);
+    transition: transform 200ms ease;
+  }
+
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .logo-mark {
+    position: relative;
+    display: grid;
+    width: 29px;
+    height: 29px;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+  }
+
+  .logo-mark::before,
+  .logo-mark::after {
+    position: absolute;
+    width: 1px;
+    height: 37px;
+    background: currentColor;
+    content: "";
+    opacity: 0.7;
+  }
+
+  .logo-mark::after {
+    transform: rotate(90deg);
+  }
+
+  .logo-mark span {
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    border-radius: 999px;
+  }
+
+  .logo-mark.small {
+    width: 24px;
+    height: 24px;
+  }
+
+  .logo-mark.small::before,
+  .logo-mark.small::after {
+    height: 30px;
+  }
+
+  .collection-card img {
+    filter: saturate(0.72) contrast(0.96);
+  }
+
+  .glow-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(70vw, 800px);
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: radial-gradient(
+      circle,
+      rgb(241 211 146 / 0.65) 0%,
+      rgb(216 178 110 / 0.15) 45%,
+      transparent 70%
+    );
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .site-container {
+    width: min(100% - 5rem, 1320px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero h1,
+  .hero .eyebrow {
+    animation: rise-in 800ms both;
+  }
+
+  .hero h1 {
+    animation-delay: 120ms;
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
