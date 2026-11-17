@@ -3,6 +3,9 @@ import { Icon, PageShell } from "./Layout";
 import { Link, useRouter, usePageTitle } from "./router";
 import { contact, formatCedis, photos, products, projects, stories, type ProductType } from "./data";
 import { submitForm } from "./api";
+import { useCart } from "./cart";
+import { CartPage, CheckoutPage, SuccessPage } from "./Shop";
+import AdminPage from "./Admin";
 
 function Intro({ eyebrow, title, text }: { eyebrow: string; title: ReactNode; text: string }) {
   return (
@@ -96,6 +99,8 @@ function ProductPage({ slug }: { slug: string }) {
   const product = products.find((item) => item.slug === slug);
   usePageTitle(product?.name ?? "Page not found");
   const [finish, setFinish] = useState(product?.finishes[0] ?? "");
+  const { add } = useCart();
+  const [added, setAdded] = useState(false);
   if (!product) return <NotFound />;
   return (
     <section className="site-container py-12 sm:py-20">
@@ -132,10 +137,26 @@ function ProductPage({ slug }: { slug: string }) {
               ))}
             </div>
           </div>
-          <Link
-            to="/contact"
+          <button
+            onClick={() => {
+              add(product.slug, finish);
+              setAdded(true);
+            }}
             className="flex w-full items-center justify-between bg-[#1d241f] px-6 py-5 text-xs font-bold uppercase tracking-[.16em] text-white hover:bg-[#9b7139]"
           >
+            Add to cart <Icon name="bag" size={18} />
+          </button>
+          <p role="status" className="mt-3 min-h-6 text-xs text-[#5b625b]">
+            {added && (
+              <>
+                Added to your cart.{" "}
+                <Link to="/cart" className="font-bold text-[#9b7139] underline">
+                  View cart
+                </Link>
+              </>
+            )}
+          </p>
+          <Link to="/contact" className="text-link mt-2">
             Enquire about this piece <Icon name="arrow" size={18} />
           </Link>
           <div className="mt-8 grid grid-cols-3 gap-4 text-xs leading-5 text-[#686f68]">
@@ -601,6 +622,10 @@ export default function InnerPage() {
   else if (section === "collections") content = slug ? <ProductPage key={slug} slug={slug} /> : <CollectionsPage />;
   else if (section === "projects") content = slug ? <ProjectDetail slug={slug} /> : <ProjectsPage />;
   else if (section === "journal") content = slug ? <ArticlePage slug={slug} /> : <JournalPage />;
+  else if (section === "admin" && !slug) content = <AdminPage />;
+  else if (section === "cart" && !slug) content = <CartPage />;
+  else if (section === "checkout" && !slug) content = <CheckoutPage />;
+  else if (section === "checkout" && slug === "success") content = <SuccessPage />;
   else if (section === "approach" && !slug) content = <ApproachPage />;
   else if (section === "contact" && !slug) content = <ContactPage />;
   else if (["privacy", "terms", "cookies"].includes(section) && !slug) content = <LegalPage type={section} />;

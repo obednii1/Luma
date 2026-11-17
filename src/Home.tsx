@@ -20,7 +20,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(14,19,16,.78)_0%,rgba(14,19,16,.35)_52%,rgba(14,19,16,.08)_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(10,14,12,.5)_0%,transparent_50%)]" />
-        <div className="site-container relative z-10 grid w-full gap-12 pb-16 pt-36 lg:grid-cols-[1fr_300px] lg:items-end lg:pb-20">
+        <div className="site-container relative z-10 grid gap-12 pb-16 pt-36 lg:grid-cols-[1fr_300px] lg:items-end lg:pb-20">
           <div className="max-w-3xl">
             <p className="eyebrow mb-6 text-[#e8c888]">
               Architectural lighting, beautifully considered

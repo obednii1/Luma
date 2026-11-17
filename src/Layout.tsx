@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useRouter } from "./router";
 import { contact, navLinks } from "./data";
+import { useCart } from "./cart";
 import { submitForm } from "./api";
 
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
@@ -53,6 +54,13 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
         <path d="M6 18c3-4 6-7 11-10" />
       </svg>
     );
+  if (name === "bag")
+    return (
+      <svg {...common}>
+        <path d="M5 8h14l-1 12H6L5 8Z" />
+        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      </svg>
+    );
   if (name === "pencil")
     return (
       <svg {...common}>
@@ -81,6 +89,7 @@ function Logo({ small = false }: { small?: boolean }) {
 /** `overlay` floats transparently over a hero image; otherwise it is solid. */
 export function Header({ overlay = false }: { overlay?: boolean }) {
   const { path } = useRouter();
+  const { count } = useCart();
   const [open, setOpen] = useState(false);
   const active = path.split("/")[1] || "";
 
@@ -121,20 +130,34 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
             </Link>
           ))}
         </nav>
-        <Link
-          to="/contact"
-          className={`hidden px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition md:block ${cta}`}
-        >
-          Start a project
-        </Link>
-        <button
-          onClick={() => setOpen(!open)}
-          className={`grid h-10 w-10 place-items-center border md:hidden ${toggle}`}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          <Icon name={open ? "close" : "menu"} />
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/cart"
+            aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}
+            className="relative grid h-10 w-10 place-items-center"
+          >
+            <Icon name="bag" size={22} />
+            {count > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#d8b26e] px-1 text-[10px] font-bold text-[#172019]">
+                {count}
+              </span>
+            )}
+          </Link>
+          <Link
+            to="/contact"
+            className={`hidden px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition md:block ${cta}`}
+          >
+            Start a project
+          </Link>
+          <button
+            onClick={() => setOpen(!open)}
+            className={`grid h-10 w-10 place-items-center border md:hidden ${toggle}`}
+            aria-label="Toggle menu"
+            aria-expanded={open}
+          >
+            <Icon name={open ? "close" : "menu"} />
+          </button>
+        </div>
       </div>
       {open && (
         <nav

@@ -33,12 +33,18 @@ export const contact = {
   phoneDisplay: "+233 59 628 6995",
   phoneHref: "tel:+233596286995",
   // Placeholder: replace with the studio's real address.
-  email: "obedniiodonkor@gmail.com",
+  email: "studio@luma-lighting.com",
   addressLines: ["East Legon", "Accra, Ghana"],
 };
 
 /** Prices are stored as whole Ghana cedis. */
 export const formatCedis = (amount: number) => `GH₵${amount.toLocaleString("en-GH")}`;
+
+// Demo delivery fees in whole cedis. The server copy in api/checkout.ts decides the real charge.
+export const deliveryZones = [
+  { id: "accra", label: "Greater Accra", fee: 150 },
+  { id: "other", label: "Other regions in Ghana", fee: 400 },
+];
 
 export type ProductType = "Pendant" | "Wall" | "Table" | "Floor";
 
