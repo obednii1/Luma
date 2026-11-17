@@ -26,7 +26,8 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-const cedis = (amount: number) => `GH₵${amount.toLocaleString("en-GH")}`;
+// Paystack can hand metadata numbers back as strings, so convert before formatting.
+const cedis = (amount: unknown) => `GH₵${Number(amount).toLocaleString("en-GH")}`;
 
 async function sendMail(to: string, subject: string, lines: string[], replyTo?: string) {
   const key = process.env.RESEND_API_KEY;

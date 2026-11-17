@@ -176,7 +176,7 @@ export default function AdminPage() {
             <em>Orders.</em>
           </h1>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={() => void loadOrders()}
             className="border border-[#1d241f]/30 px-5 py-3 text-[10px] font-bold uppercase tracking-[.16em]"
@@ -235,9 +235,9 @@ export default function AdminPage() {
             : `No orders with status “${statusLabel(filter)}”.`}
         </p>
       ) : (
-        <ul className="space-y-5">
+        <ul className="space-y-5 [overflow-wrap:anywhere]">
           {visible.map((order) => (
-            <li key={order.id} className="border border-[#1d241f]/20 p-6 sm:p-8">
+            <li key={order.id} className="min-w-0 border border-[#1d241f]/20 p-6 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="font-display text-2xl">{order.reference}</p>
@@ -264,8 +264,8 @@ export default function AdminPage() {
                 </label>
               </div>
 
-              <div className="mt-6 grid gap-8 text-sm leading-7 md:grid-cols-2">
-                <div>
+              <div className="mt-6 grid grid-cols-1 gap-8 text-sm leading-7 [overflow-wrap:anywhere] md:grid-cols-2">
+                <div className="min-w-0">
                   <span className="eyebrow text-[#8b918b]">Items</span>
                   <ul className="mt-2">
                     {order.items.map((item) => (
@@ -282,7 +282,7 @@ export default function AdminPage() {
                   </p>
                   <p className="mt-1 font-semibold">Total {formatCedis(Number(order.amount_ghs))}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="eyebrow text-[#8b918b]">Customer</span>
                   <p className="mt-2">
                     {order.customer_name}
