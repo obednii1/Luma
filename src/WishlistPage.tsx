@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from "./Layout";
 import { Link, usePageTitle } from "./router";
-import { formatCedis, products as defaults } from "./data";
+import { formatCedis } from "./data";
 import { useCart } from "./cart";
 import { useProducts } from "./products";
 import { HeartButton, useWishlist } from "./wishlist";
@@ -17,7 +17,7 @@ export function WishlistPage() {
   // A shared link looks like /wishlist?items=arc-pendant-01,opal-rise
   const shared = (new URLSearchParams(window.location.search).get("items") ?? "")
     .split(",")
-    .filter((slug) => defaults.some((product) => product.slug === slug));
+    .filter((slug) => /^[a-z0-9-]{1,60}$/.test(slug));
   const [viewShared, setViewShared] = useState(shared.length > 0);
   const listSlugs = viewShared ? shared : slugs;
   const items = listSlugs.flatMap((slug) => {

@@ -4,7 +4,7 @@ import { Link, useRouter, usePageTitle } from "./router";
 import { contact, formatCedis, photos, projects, stories, type ProductType } from "./data";
 import { submitForm } from "./api";
 import { useCart } from "./cart";
-import { useProducts } from "./products";
+import { useProducts, useProductsLoaded } from "./products";
 import { CartPage, CheckoutPage, SuccessPage } from "./Shop";
 import AdminPage from "./Admin";
 import { TrackPage } from "./Track";
@@ -105,11 +105,13 @@ function CollectionsPage() {
 
 function ProductPage({ slug }: { slug: string }) {
   const product = useProducts().find((item) => item.slug === slug);
+  const loaded = useProductsLoaded();
   usePageTitle(product?.name ?? "Page not found");
   const [finish, setFinish] = useState(product?.finishes[0] ?? "");
   const { add } = useCart();
   const { has: hasWish, toggle: toggleWish } = useWishlist();
   const [added, setAdded] = useState(false);
+  if (!product && !loaded) return <p role="status" className="site-container py-24 text-center text-sm text-[#5b625b]">Loading…</p>;
   if (!product) return <NotFound />;
   return (
     <section className="site-container py-12 sm:py-20">

@@ -51,6 +51,38 @@ async function loadOverrides(): Promise<
   }
 }
 
+/** "database" once supabase/catalog.sql has been run; "builtin" before that. null = couldn't check. */
+async function loadMode(url: string, headers: Record<string, string>): Promise<"database" | "builtin" | null> {
+  try {
+    const response = await fetch(`${url}/rest/v1/shop_settings?key=eq.catalog_mode&select=value`, { headers });
+    if (response.status === 404) return "builtin";
+    if (!response.ok) return null;
+    const [row] = (await response.json()) as { value?: string }[];
+    return row?.value === "database" ? "database" : "builtin";
+  } catch {
+    return null;
+  }
+}
+
+/** Products added from the admin page. Returns null if we can't check (so we never guess a price). */
+async function loadCustom(): Promise<Record<string, { name: string; price: number; finishes: string[]; available: boolean }> | null> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return {};
+  try {
+    const response = await fetch(`${url}/rest/v1/custom_products?select=slug,name,price_ghs,finishes,available`, {
+      headers: { apikey: key, ...(key.startsWith("eyJ") ? { Authorization: `Bearer ${key}` } : {}) },
+    });
+    if (!response.ok) return response.status === 404 ? {} : null;
+    const rows = (await response.json()) as { slug: string; name: string; price_ghs: number; finishes: string[]; available: boolean }[];
+    return Object.fromEntries(
+      rows.map((row) => [row.slug, { name: row.name, price: Number(row.price_ghs), finishes: row.finishes, available: row.available }]),
+    );
+  } catch {
+    return null;
+  }
+}
+
 const DELIVERY: Record<string, { label: string; fee: number }> = {
   accra: { label: "Greater Accra", fee: 150 },
   other: { label: "Other regions in Ghana", fee: 400 },
@@ -108,18 +140,31 @@ export async function POST(request: Request) {
   }
 
   const overrides = await loadOverrides();
-  if (!overrides) return json({ error: "We couldn't check prices just now. Please try again." }, 503);
+  const custom = await loadCustom();
+  const dbUrl = process.env.SUPABASE_URL;
+  const dbKey = process.env.SUPABASE_SERVICE_KEY;
+  const mode =
+    dbUrl && dbKey
+      ? await loadMode(dbUrl, { apikey: dbKey, ...(dbKey.startsWith("eyJ") ? { Authorization: `Bearer ${dbKey}` } : {}) })
+      : "builtin";
+  if (!overrides || !custom || !mode) return json({ error: "We couldn't check prices just now. Please try again." }, 503);
 
   const items: { name: string; finish: string; qty: number; unitPrice: number }[] = [];
   for (const raw of rawItems as Record<string, unknown>[]) {
-    const base = PRODUCTS[clean(raw?.slug, 80)];
-    const override = base ? overrides[clean(raw?.slug, 80)] : undefined;
-    const product = base && {
-      ...base,
-      name: override?.name ?? base.name,
-      price: override ? Number(override.price_ghs) : base.price,
-      available: override ? override.available : true,
-    };
+    const slug = clean(raw?.slug, 80);
+    // Once the catalog lives in the database, the code's built-in list is no longer used.
+    const base = mode === "builtin" && Object.hasOwn(PRODUCTS, slug) ? PRODUCTS[slug] : undefined;
+    const override = base ? overrides[slug] : undefined;
+    const product = base
+      ? {
+          ...base,
+          name: override?.name ?? base.name,
+          price: override ? Number(override.price_ghs) : base.price,
+          available: override ? override.available : true,
+        }
+      : Object.hasOwn(custom, slug)
+        ? custom[slug]
+        : undefined;
     const finish = clean(raw?.finish, 60);
     const qty = Number(raw?.qty);
     if (!product || !product.available || !product.finishes.includes(finish) || !Number.isInteger(qty) || qty < 1 || qty > 10) {

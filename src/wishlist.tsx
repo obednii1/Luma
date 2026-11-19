@@ -7,11 +7,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { products } from "./data";
+import { useProducts } from "./products";
 
 const KEY = "luma-wishlist";
-const known = (slug: unknown): slug is string =>
-  typeof slug === "string" && products.some((product) => product.slug === slug);
+const known = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9-]{1,60}$/.test(slug);
 
 function load(): string[] {
   try {
@@ -32,15 +31,18 @@ type WishlistValue = {
 const WishlistContext = createContext<WishlistValue | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [slugs, setSlugs] = useState<string[]>(load);
+  const [saved, setSlugs] = useState<string[]>(load);
+  const catalog = useProducts();
+  // Only count pieces that still exist (a removed product quietly drops out).
+  const slugs = useMemo(() => saved.filter((slug) => catalog.some((product) => product.slug === slug)), [saved, catalog]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(slugs));
+      localStorage.setItem(KEY, JSON.stringify(saved));
     } catch {
       // Storage can be blocked (private mode); the wishlist still works for this visit.
     }
-  }, [slugs]);
+  }, [saved]);
 
   const toggle = useCallback(
     (slug: string) =>

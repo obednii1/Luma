@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { formatCedis, products as defaults } from "./data";
 import { applyOverrides, type Override } from "./products";
+import AdminCustomProducts, { Catalog } from "./AdminCustomProducts";
+import type { CustomProduct } from "./products";
 
 type Draft = { name: string; price: string; description: string; leadTime: string; available: boolean };
 
@@ -180,7 +182,37 @@ function ProductEditor({
   );
 }
 
+/** Chooses the full editor (all products in the database) or the older price editor. */
 export default function AdminProducts({ onUnauthorized }: { onUnauthorized: () => void }) {
+  const [state, setState] = useState<
+    { kind: "checking" } | { kind: "database"; custom: CustomProduct[] } | { kind: "builtin" }
+  >({ kind: "checking" });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/custom-products")
+      .then(async (response) => {
+        if (response.status === 401) return onUnauthorized();
+        const data = (await response.json()) as { mode?: string; custom?: CustomProduct[] };
+        if (cancelled) return;
+        setState(
+          response.ok && data.mode === "database"
+            ? { kind: "database", custom: data.custom ?? [] }
+            : { kind: "builtin" },
+        );
+      })
+      .catch(() => !cancelled && setState({ kind: "builtin" }));
+    return () => {
+      cancelled = true;
+    };
+  }, [onUnauthorized]);
+
+  if (state.kind === "checking") return <p className="py-10 text-center text-sm text-[#5b625b]">Loading…</p>;
+  if (state.kind === "database") return <Catalog initial={state.custom} onUnauthorized={onUnauthorized} />;
+  return <LegacyProducts onUnauthorized={onUnauthorized} />;
+}
+
+function LegacyProducts({ onUnauthorized }: { onUnauthorized: () => void }) {
   const [overrides, setOverrides] = useState<Override[] | null>(null);
   const [error, setError] = useState("");
 
@@ -216,7 +248,8 @@ export default function AdminProducts({ onUnauthorized }: { onUnauthorized: () =
     <>
       <p className="mb-8 max-w-2xl text-sm leading-7 text-[#5b625b]">
         Change a product's name, price, description or lead time, or hide it from the shop. Changes
-        reach the website within a few seconds. Photos and finishes stay as they are.
+        reach the website within a few seconds. To edit photos and finishes, delete products or put
+        "Add a product" at the top, run <b>supabase/catalog.sql</b> in Supabase once.
       </p>
       <ul className="space-y-5">
         {merged.map((product) => (
@@ -233,6 +266,7 @@ export default function AdminProducts({ onUnauthorized }: { onUnauthorized: () =
           />
         ))}
       </ul>
+      <AdminCustomProducts onUnauthorized={onUnauthorized} />
     </>
   );
 }

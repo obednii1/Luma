@@ -7,7 +7,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { products as defaultProducts } from "./data";
 import { useProducts, type ShopProduct } from "./products";
 
 export type CartLine = { slug: string; finish: string; qty: number };
@@ -28,7 +27,7 @@ function load(): CartLine[] {
           typeof line.finish === "string" &&
           Number.isInteger(line.qty) &&
           line.qty > 0 &&
-          defaultProducts.some((product) => product.slug === line.slug),
+          line.slug.length <= 80,
       )
       .map((line) => ({ ...line, qty: Math.min(line.qty, MAX_QTY) }));
   } catch {
