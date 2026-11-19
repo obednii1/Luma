@@ -1,11 +1,15 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon, PageShell } from "./Layout";
 import { Link, useRouter, usePageTitle } from "./router";
-import { contact, formatCedis, photos, products, projects, stories, type ProductType } from "./data";
+import { contact, formatCedis, photos, projects, stories, type ProductType } from "./data";
 import { submitForm } from "./api";
 import { useCart } from "./cart";
+import { useProducts } from "./products";
 import { CartPage, CheckoutPage, SuccessPage } from "./Shop";
 import AdminPage from "./Admin";
+import { TrackPage } from "./Track";
+import { WishlistPage } from "./WishlistPage";
+import { HeartButton, useWishlist } from "./wishlist";
 
 function Intro({ eyebrow, title, text }: { eyebrow: string; title: ReactNode; text: string }) {
   return (
@@ -39,6 +43,7 @@ const filters: ("All" | ProductType)[] = ["All", "Pendant", "Wall", "Table", "Fl
 function CollectionsPage() {
   usePageTitle("Collections");
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+  const products = useProducts().filter((p) => p.available);
   const visible = filter === "All" ? products : products.filter((p) => p.type === filter);
   return (
     <>
@@ -70,7 +75,8 @@ function CollectionsPage() {
         </div>
         <div className="grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((product) => (
-            <Link key={product.slug} to={`/collections/${product.slug}`} className="group block text-left">
+            <div key={product.slug} className="relative">
+            <Link to={`/collections/${product.slug}`} className="group block text-left">
               <div className="aspect-[4/5] overflow-hidden bg-[#ddd8cc]">
                 <img
                   src={product.image}
@@ -88,6 +94,8 @@ function CollectionsPage() {
                 <span className="text-sm">{formatCedis(product.price)}</span>
               </div>
             </Link>
+            <HeartButton slug={product.slug} name={product.name} className="absolute right-3 top-3" />
+            </div>
           ))}
         </div>
       </section>
@@ -96,10 +104,11 @@ function CollectionsPage() {
 }
 
 function ProductPage({ slug }: { slug: string }) {
-  const product = products.find((item) => item.slug === slug);
+  const product = useProducts().find((item) => item.slug === slug);
   usePageTitle(product?.name ?? "Page not found");
   const [finish, setFinish] = useState(product?.finishes[0] ?? "");
   const { add } = useCart();
+  const { has: hasWish, toggle: toggleWish } = useWishlist();
   const [added, setAdded] = useState(false);
   if (!product) return <NotFound />;
   return (
@@ -138,13 +147,22 @@ function ProductPage({ slug }: { slug: string }) {
             </div>
           </div>
           <button
+            disabled={!product.available}
             onClick={() => {
               add(product.slug, finish);
               setAdded(true);
             }}
-            className="flex w-full items-center justify-between bg-[#1d241f] px-6 py-5 text-xs font-bold uppercase tracking-[.16em] text-white hover:bg-[#9b7139]"
+            className="flex w-full items-center justify-between bg-[#1d241f] px-6 py-5 text-xs font-bold uppercase tracking-[.16em] text-white hover:bg-[#9b7139] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[#1d241f]"
           >
-            Add to cart <Icon name="bag" size={18} />
+            {product.available ? "Add to cart" : "Currently unavailable"} <Icon name="bag" size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleWish(product.slug)}
+            aria-pressed={hasWish(product.slug)}
+            className="mt-3 w-full border border-[#1d241f]/25 px-6 py-4 text-xs font-bold uppercase tracking-[.16em] hover:border-[#9b7139]"
+          >
+            {hasWish(product.slug) ? "Saved to wishlist ♥" : "Save to wishlist ♡"}
           </button>
           <p role="status" className="mt-3 min-h-6 text-xs text-[#5b625b]">
             {added && (
@@ -623,6 +641,8 @@ export default function InnerPage() {
   else if (section === "projects") content = slug ? <ProjectDetail slug={slug} /> : <ProjectsPage />;
   else if (section === "journal") content = slug ? <ArticlePage slug={slug} /> : <JournalPage />;
   else if (section === "admin" && !slug) content = <AdminPage />;
+  else if (section === "track" && !slug) content = <TrackPage />;
+  else if (section === "wishlist" && !slug) content = <WishlistPage />;
   else if (section === "cart" && !slug) content = <CartPage />;
   else if (section === "checkout" && !slug) content = <CheckoutPage />;
   else if (section === "checkout" && slug === "success") content = <SuccessPage />;

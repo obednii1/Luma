@@ -7,10 +7,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { products, type Product } from "./data";
+import { products as defaultProducts } from "./data";
+import { useProducts, type ShopProduct } from "./products";
 
 export type CartLine = { slug: string; finish: string; qty: number };
-export type CartItem = CartLine & { product: Product };
+export type CartItem = CartLine & { product: ShopProduct };
 
 const STORAGE_KEY = "luma-cart";
 export const MAX_QTY = 10;
@@ -27,7 +28,7 @@ function load(): CartLine[] {
           typeof line.finish === "string" &&
           Number.isInteger(line.qty) &&
           line.qty > 0 &&
-          products.some((product) => product.slug === line.slug),
+          defaultProducts.some((product) => product.slug === line.slug),
       )
       .map((line) => ({ ...line, qty: Math.min(line.qty, MAX_QTY) }));
   } catch {
@@ -50,6 +51,7 @@ const CartContext = createContext<CartValue | null>(null);
 const same = (a: CartLine, slug: string, finish: string) => a.slug === slug && a.finish === finish;
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const products = useProducts();
   const [lines, setLines] = useState<CartLine[]>(load);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartValue>(() => {
     const items = lines.flatMap((line) => {
       const product = products.find((item) => item.slug === line.slug);
-      return product ? [{ ...line, product }] : [];
+      return product && product.available ? [{ ...line, product }] : [];
     });
     return {
       items,
@@ -100,7 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove,
       clear,
     };
-  }, [lines, add, setQty, remove, clear]);
+  }, [lines, products, add, setQty, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

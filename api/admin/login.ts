@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   // Compare hashes in constant time so response timing doesn't leak anything.
-  const ok = timingSafeEqual(sha256(password), sha256(adminPassword));
+  const ok = timingSafeEqual(sha256(password.trim()), sha256(adminPassword.trim()));
   if (!ok) {
     await new Promise((resolve) => setTimeout(resolve, 800)); // slows down guessing
     return json({ error: "Incorrect password." }, 401);

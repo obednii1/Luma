@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { usePageTitle } from "./router";
 import { formatCedis } from "./data";
+import AdminProducts from "./AdminProducts";
 
 const STATUSES = [
   ["paid", "Paid"],
@@ -26,16 +27,75 @@ type Order = {
   address: string | null;
   city: string | null;
   notes: string | null;
+  tracking_note?: string | null;
   items: { name: string; finish: string; qty: number; unitPrice: number }[];
   created_at: string;
 };
 
 const statusLabel = (status: string) => STATUSES.find(([value]) => value === status)?.[1] ?? status;
 
+/** Short message shown to the customer on the Track page (e.g. courier and phone number). */
+function TrackingNote({ order, onUnauthorized }: { order: Order; onUnauthorized: () => void }) {
+  const [value, setValue] = useState(order.tracking_note ?? "");
+  const [saved, setSaved] = useState(order.tracking_note ?? "");
+  const [state, setState] = useState<"idle" | "saving" | "ok" | "error">("idle");
+
+  const save = async (event: FormEvent) => {
+    event.preventDefault();
+    setState("saving");
+    try {
+      const response = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: order.id, tracking_note: value }),
+      });
+      if (response.status === 401) return onUnauthorized();
+      if (!response.ok) throw new Error();
+      setSaved(value.trim());
+      setValue(value.trim());
+      setState("ok");
+    } catch {
+      setState("error");
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="mt-6 border-t border-[#1d241f]/15 pt-6">
+      <label className="form-field">
+        <span>Note for the customer (shown on Track page)</span>
+        <input
+          maxLength={500}
+          placeholder="e.g. Dispatched with Courier X, call 024 000 0000"
+          value={value}
+          onChange={(event) => {
+            setValue(event.target.value);
+            setState("idle");
+          }}
+        />
+      </label>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button
+          disabled={state === "saving" || value.trim() === saved}
+          className="border border-[#1d241f]/30 px-4 py-3 text-[10px] font-bold uppercase tracking-[.16em] disabled:opacity-40"
+        >
+          {state === "saving" ? "Saving…" : "Save note"}
+        </button>
+        {state === "ok" && <span role="status" className="text-xs text-[#4a6b3a]">Saved.</span>}
+        {state === "error" && (
+          <span role="alert" className="text-xs text-[#8a3b2a]">
+            Couldn't save. Have you run supabase/tracking.sql?
+          </span>
+        )}
+      </div>
+    </form>
+  );
+}
+
 export default function AdminPage() {
   usePageTitle("Admin");
   const [phase, setPhase] = useState<"checking" | "login" | "ready">("checking");
   const [orders, setOrders] = useState<Order[]>([]);
+  const [tab, setTab] = useState<"orders" | "products">("orders");
   const [filter, setFilter] = useState<"all" | Status>("all");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -95,6 +155,8 @@ export default function AdminPage() {
     }
   };
 
+  const goToLogin = useCallback(() => setPhase("login"), []);
+
   const logout = async () => {
     await fetch("/api/admin/logout", { method: "POST" }).catch(() => undefined);
     setOrders([]);
@@ -142,6 +204,9 @@ export default function AdminPage() {
               required
               type="password"
               autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
@@ -173,7 +238,7 @@ export default function AdminPage() {
         <div>
           <p className="eyebrow mb-5 text-[#9b7139]">Studio admin</p>
           <h1 className="page-title">
-            <em>Orders.</em>
+            <em>{tab === "orders" ? "Orders." : "Products."}</em>
           </h1>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -192,6 +257,24 @@ export default function AdminPage() {
         </div>
       </div>
 
+      <div className="mb-10 flex gap-2 border-b border-[#1d241f]/15" role="tablist">
+        {(["orders", "products"] as const).map((value) => (
+          <button
+            key={value}
+            role="tab"
+            aria-selected={tab === value}
+            onClick={() => setTab(value)}
+            className={`-mb-px border-b-2 px-5 py-3 text-[10px] font-bold uppercase tracking-[.16em] ${tab === value ? "border-[#1d241f]" : "border-transparent text-[#686f68]"}`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+
+      {tab === "products" ? (
+        <AdminProducts onUnauthorized={goToLogin} />
+      ) : (
+        <>
       <div className="mb-8 grid gap-px bg-[#1d241f]/15 sm:grid-cols-3">
         {[
           ["Orders", String(orders.length)],
@@ -306,9 +389,12 @@ export default function AdminPage() {
                   {order.notes && <p className="mt-3 text-[#686f68]">Notes: {order.notes}</p>}
                 </div>
               </div>
+              <TrackingNote order={order} onUnauthorized={goToLogin} />
             </li>
           ))}
         </ul>
+      )}
+        </>
       )}
     </section>
   );

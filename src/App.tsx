@@ -1,6 +1,8 @@
 import Home from "./Home";
 import InnerPage from "./Pages";
 import { CartProvider } from "./cart";
+import { ProductsProvider } from "./products";
+import { WishlistProvider } from "./wishlist";
 import { RouterProvider, useRouter } from "./router";
 
 function Routes() {
@@ -11,9 +13,13 @@ function Routes() {
 export default function App() {
   return (
     <RouterProvider>
-      <CartProvider>
-        <Routes />
-      </CartProvider>
+      <ProductsProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Routes />
+          </CartProvider>
+        </WishlistProvider>
+      </ProductsProvider>
     </RouterProvider>
   );
 }

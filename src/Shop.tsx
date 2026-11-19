@@ -354,9 +354,17 @@ export function SuccessPage() {
               ))}
             </ul>
           )}
-          <Link to="/collections" className="text-link mt-10">
-            Continue browsing <Icon name="arrow" size={18} />
-          </Link>
+          <p className="mx-auto mt-8 max-w-md text-sm leading-7 text-[#5b625b]">
+            Keep your order number. You can check its progress any time on the tracking page.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            <Link to={`/track?ref=${encodeURIComponent(order.reference)}`} className="text-link">
+              Track this order <Icon name="arrow" size={18} />
+            </Link>
+            <Link to="/collections" className="text-link">
+              Continue browsing <Icon name="arrow" size={18} />
+            </Link>
+          </div>
         </>
       )}
 

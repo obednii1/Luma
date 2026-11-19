@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useRouter } from "./router";
 import { contact, navLinks } from "./data";
 import { useCart } from "./cart";
+import { useWishlist } from "./wishlist";
 import { submitForm } from "./api";
 
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
@@ -54,6 +55,12 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
         <path d="M6 18c3-4 6-7 11-10" />
       </svg>
     );
+  if (name === "heart")
+    return (
+      <svg {...common}>
+        <path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z" />
+      </svg>
+    );
   if (name === "bag")
     return (
       <svg {...common}>
@@ -90,6 +97,7 @@ function Logo({ small = false }: { small?: boolean }) {
 export function Header({ overlay = false }: { overlay?: boolean }) {
   const { path } = useRouter();
   const { count } = useCart();
+  const wishCount = useWishlist().slugs.length;
   const [open, setOpen] = useState(false);
   const active = path.split("/")[1] || "";
 
@@ -116,7 +124,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
           <Logo />
         </Link>
         <nav
-          className="hidden items-center gap-9 text-[11px] font-semibold uppercase tracking-[0.18em] md:flex"
+          className="hidden items-center gap-9 text-[11px] font-semibold uppercase tracking-[0.18em] lg:flex"
           aria-label="Main navigation"
         >
           {navLinks.map(([label, to]) => (
@@ -132,6 +140,18 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
         </nav>
         <div className="flex items-center gap-3">
           <Link
+            to="/wishlist"
+            aria-label={`Wishlist, ${wishCount} ${wishCount === 1 ? "item" : "items"}`}
+            className="relative grid h-10 w-10 place-items-center"
+          >
+            <Icon name="heart" size={22} />
+            {wishCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#d8b26e] px-1 text-[10px] font-bold text-[#172019]">
+                {wishCount}
+              </span>
+            )}
+          </Link>
+          <Link
             to="/cart"
             aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}
             className="relative grid h-10 w-10 place-items-center"
@@ -145,13 +165,13 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
           </Link>
           <Link
             to="/contact"
-            className={`hidden px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition md:block ${cta}`}
+            className={`hidden px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition lg:block ${cta}`}
           >
             Start a project
           </Link>
           <button
             onClick={() => setOpen(!open)}
-            className={`grid h-10 w-10 place-items-center border md:hidden ${toggle}`}
+            className={`grid h-10 w-10 place-items-center border lg:hidden ${toggle}`}
             aria-label="Toggle menu"
             aria-expanded={open}
           >
@@ -161,7 +181,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
       </div>
       {open && (
         <nav
-          className="absolute inset-x-0 top-20 flex flex-col bg-[#1d241f] p-6 text-white md:hidden"
+          className="absolute inset-x-0 top-20 flex flex-col bg-[#1d241f] p-6 text-white lg:hidden"
           aria-label="Mobile navigation"
         >
           {[...navLinks, ["Start a project", "/contact"]].map(([label, to]) => (
@@ -290,6 +310,8 @@ export function Footer() {
         <div className="flex flex-col justify-between gap-4 pt-7 text-[9px] uppercase tracking-[.16em] text-white/35 sm:flex-row">
           <p>© {new Date().getFullYear()} Luma Lighting Studio</p>
           <div className="flex gap-4">
+            <Link to="/track">Track order</Link>
+            <Link to="/wishlist">Wishlist</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
             <Link to="/cookies">Cookies</Link>

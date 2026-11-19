@@ -29,6 +29,28 @@ const PRODUCTS: Record<string, { name: string; price: number; finishes: string[]
   },
 };
 
+/** Prices/availability edited in the admin page (saved in the database). */
+async function loadOverrides(): Promise<
+  Record<string, { name: string; price_ghs: number; available: boolean }> | null
+> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return {}; // no database yet: use the built-in prices
+  try {
+    const response = await fetch(`${url}/rest/v1/product_overrides?select=slug,name,price_ghs,available`, {
+      headers: { apikey: key, ...(key.startsWith("eyJ") ? { Authorization: `Bearer ${key}` } : {}) },
+    });
+    if (!response.ok) {
+      // Table not created yet (404) is fine; anything else we can't trust.
+      return response.status === 404 ? {} : null;
+    }
+    const rows = (await response.json()) as { slug: string; name: string; price_ghs: number; available: boolean }[];
+    return Object.fromEntries(rows.map((row) => [row.slug, row]));
+  } catch {
+    return null;
+  }
+}
+
 const DELIVERY: Record<string, { label: string; fee: number }> = {
   accra: { label: "Greater Accra", fee: 150 },
   other: { label: "Other regions in Ghana", fee: 400 },
@@ -85,12 +107,22 @@ export async function POST(request: Request) {
     return json({ error: "Your cart is empty." }, 400);
   }
 
+  const overrides = await loadOverrides();
+  if (!overrides) return json({ error: "We couldn't check prices just now. Please try again." }, 503);
+
   const items: { name: string; finish: string; qty: number; unitPrice: number }[] = [];
   for (const raw of rawItems as Record<string, unknown>[]) {
-    const product = PRODUCTS[clean(raw?.slug, 80)];
+    const base = PRODUCTS[clean(raw?.slug, 80)];
+    const override = base ? overrides[clean(raw?.slug, 80)] : undefined;
+    const product = base && {
+      ...base,
+      name: override?.name ?? base.name,
+      price: override ? Number(override.price_ghs) : base.price,
+      available: override ? override.available : true,
+    };
     const finish = clean(raw?.finish, 60);
     const qty = Number(raw?.qty);
-    if (!product || !product.finishes.includes(finish) || !Number.isInteger(qty) || qty < 1 || qty > 10) {
+    if (!product || !product.available || !product.finishes.includes(finish) || !Number.isInteger(qty) || qty < 1 || qty > 10) {
       return json({ error: "Something in your cart is no longer available. Please review it." }, 400);
     }
     items.push({ name: product.name, finish, qty, unitPrice: product.price });

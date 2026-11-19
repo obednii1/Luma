@@ -76,7 +76,7 @@ export async function PATCH(request: Request) {
   const db = database();
   if (!db) return json({ error: "The database is not configured yet." }, 500);
 
-  let body: { id?: unknown; status?: unknown };
+  let body: { id?: unknown; status?: unknown; tracking_note?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -84,15 +84,25 @@ export async function PATCH(request: Request) {
   }
 
   const id = typeof body.id === "string" ? body.id : "";
-  const status = typeof body.status === "string" ? body.status : "";
-  if (!/^[0-9a-f-]{36}$/i.test(id) || !STATUSES.includes(status)) {
-    return json({ error: "Invalid order or status." }, 400);
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: "Invalid order." }, 400);
+
+  const update: Record<string, unknown> = {};
+  if (body.status !== undefined) {
+    if (typeof body.status !== "string" || !STATUSES.includes(body.status)) {
+      return json({ error: "Invalid status." }, 400);
+    }
+    update.status = body.status;
   }
+  if (body.tracking_note !== undefined) {
+    if (typeof body.tracking_note !== "string") return json({ error: "Invalid note." }, 400);
+    update.tracking_note = body.tracking_note.trim().slice(0, 500) || null;
+  }
+  if (Object.keys(update).length === 0) return json({ error: "Nothing to update." }, 400);
 
   const response = await fetch(`${db.url}/rest/v1/orders?id=eq.${id}`, {
     method: "PATCH",
     headers: { ...db.headers, Prefer: "return=representation" },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(update),
   });
   if (!response.ok) {
     console.error("Updating order failed", response.status, await response.text());

@@ -24,8 +24,9 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const navigate = useCallback((to: string) => {
-    if (to !== window.location.pathname) window.history.pushState({}, "", to);
-    setPath(to);
+    // "to" may carry a query string (e.g. /track?ref=...); the route itself is just the path.
+    if (to !== window.location.pathname + window.location.search) window.history.pushState({}, "", to);
+    setPath(to.split(/[?#]/)[0]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
