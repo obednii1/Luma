@@ -166,15 +166,23 @@ export function CustomEditor({
             No photo yet
           </div>
         )}
-        <label className="block min-w-0 text-xs text-[#686f68] md:mt-3">
-          <span className="mb-1 block font-bold uppercase tracking-[.14em]">{product ? "Change photo" : "Photo"}</span>
-          <input
-            type="file"
-            accept="image/*"
-            className="block w-full min-w-0 text-xs"
-            onChange={(event) => void choosePhoto(event.target.files?.[0])}
-          />
-        </label>
+        <div className="min-w-0 md:mt-3">
+          <label className="inline-flex cursor-pointer items-center justify-center border border-[#1d241f]/40 px-4 py-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#1d241f] transition hover:bg-[#1d241f] hover:text-white focus-within:ring-2 focus-within:ring-[#9b7139]">
+            {preview ? "Change photo" : "Choose photo"}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => {
+                void choosePhoto(event.target.files?.[0]);
+                event.target.value = ""; // lets you pick the same file again
+              }}
+            />
+          </label>
+          <p className="mt-2 text-[11px] leading-5 text-[#686f68]">
+            {photo ? "New photo ready. Press save." : "JPG or PNG. It is resized for you."}
+          </p>
+        </div>
       </div>
 
       <div className="grid min-w-0 gap-5">

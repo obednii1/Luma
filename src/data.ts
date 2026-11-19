@@ -32,8 +32,7 @@ export const homeImages = {
 export const contact = {
   phoneDisplay: "+233 59 628 6995",
   phoneHref: "tel:+233596286995",
-  // Placeholder: replace with the studio's real address.
-  email: "studio@luma-lighting.com",
+  email: "obedniiodonkor@gmail.com",
   addressLines: ["East Legon", "Accra, Ghana"],
 };
 
@@ -159,7 +158,7 @@ export const projects: Project[] = [
   {
     slug: "alder-house",
     name: "The Alder House",
-    place: "Bath · Residential",
+    place: "Cantonments, Accra · Residential",
     year: "2024",
     scope: "Full lighting design",
     architect: "North & Alder",
@@ -172,7 +171,7 @@ export const projects: Project[] = [
   {
     slug: "field-and-form",
     name: "Field & Form",
-    place: "London · Hospitality",
+    place: "Osu, Accra · Hospitality",
     year: "2023",
     scope: "Lighting design & fixture curation",
     architect: "Studio Verge",
@@ -185,7 +184,7 @@ export const projects: Project[] = [
   {
     slug: "west-heath",
     name: "West Heath",
-    place: "Hampstead · Residential",
+    place: "East Legon, Accra · Residential",
     year: "2023",
     scope: "Lighting design & energy planning",
     architect: "Haldane Partners",

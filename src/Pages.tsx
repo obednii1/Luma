@@ -7,6 +7,7 @@ import { useCart } from "./cart";
 import { useProducts, useProductsLoaded } from "./products";
 import { CartPage, CheckoutPage, SuccessPage } from "./Shop";
 import AdminPage from "./Admin";
+import { LegalPage } from "./Legal";
 import { TrackPage } from "./Track";
 import { WishlistPage } from "./WishlistPage";
 import { HeartButton, useWishlist } from "./wishlist";
@@ -598,36 +599,6 @@ function ContactPage() {
           </button>
         </form>
       )}
-    </section>
-  );
-}
-
-function LegalPage({ type }: { type: string }) {
-  const title =
-    type === "privacy" ? "Privacy policy" : type === "terms" ? "Terms of use" : "Cookie policy";
-  usePageTitle(title);
-  return (
-    <section className="site-container max-w-3xl py-20 sm:py-28">
-      <p className="eyebrow mb-5 text-[#9b7139]">Luma Lighting Studio</p>
-      <h1 className="page-title">{title}</h1>
-      <div className="article-copy mt-12">
-        <p>Last updated 6 June 2025</p>
-        <h2>Our commitment</h2>
-        <p>
-          We respect your privacy and only collect information needed to respond to enquiries,
-          provide our services, and improve your experience. We never sell personal information.
-        </p>
-        <h2>Information we collect</h2>
-        <p>
-          When you contact us or subscribe to our journal, we may collect your name, email address,
-          telephone number, and details you choose to share about your project.
-        </p>
-        <h2>Questions</h2>
-        <p>
-          For questions about this policy, contact {contact.email}. We will respond as soon as
-          reasonably possible.
-        </p>
-      </div>
     </section>
   );
 }

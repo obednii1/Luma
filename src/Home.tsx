@@ -99,7 +99,7 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-black/15" />
             <div className="absolute bottom-6 left-6 border border-white/40 bg-black/20 px-4 py-3 text-[10px] uppercase tracking-[0.16em] backdrop-blur-sm">
-              Bath, UK · Residential
+              Cantonments, Accra · Residential
             </div>
           </div>
           <div className="flex flex-col justify-between p-8 sm:p-14 lg:p-16">
@@ -113,8 +113,8 @@ export default function Home() {
             </div>
             <div className="mt-24 max-w-md">
               <p className="mb-8 text-base leading-8 text-white/65">
-                A Grade II-listed townhouse where subtle pools of light reveal original plasterwork,
-                walnut joinery, and a quietly modern art collection.
+                A refined townhouse in Cantonments where subtle pools of light reveal original plasterwork,
+                hardwood joinery, and a quietly modern art collection.
               </p>
               <div className="mb-9 grid grid-cols-2 gap-6 border-y border-white/15 py-6">
                 <div>
